@@ -3,6 +3,7 @@ import React from "react";
 import { StarIcon } from "react-native-heroicons/solid";
 import { LocationMarkerIcon } from "react-native-heroicons/outline";
 import { urlFor } from "../sanity";
+import { useNavigation } from "@react-navigation/native";
 
 const RestaurantCard = ({
   id,
@@ -16,8 +17,29 @@ const RestaurantCard = ({
   long,
   lat,
 }) => {
+  // Navigation hook to navigate to the restaurant screen
+  const navigation = useNavigation();
+
   return (
-    <TouchableOpacity className="bg-white mr-3 shadow">
+    <TouchableOpacity
+      // when user taps on the restaurant card, navigate to the restaurant screen
+      // to see the menu of the restaurant. We are passing props to the restaurant screen
+      onPress={() => {
+        navigation.navigate("Restaurant", {
+          id,
+          imgUrl,
+          title,
+          rating,
+          genre,
+          address,
+          short_description,
+          dishes,
+          long,
+          lat,
+        });
+      }}
+      className="bg-white mr-3 shadow"
+    >
       <Image
         source={{
           uri: urlFor(imgUrl).url(),
