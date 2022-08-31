@@ -1,80 +1,96 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import Currency from 'react-currency-formatter';
-import React, { useState } from 'react';
-import { urlFor } from '../sanity';
-import { MinusCircleIcon, PlusCircleIcon } from 'react-native-heroicons/solid';
+import { View, Text, Image, TouchableOpacity } from "react-native";
+import Currency from "react-currency-formatter";
+import React, { useState } from "react";
+import { urlFor } from "../sanity";
+import { MinusCircleIcon, PlusCircleIcon } from "react-native-heroicons/solid";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToBasket,
+  removeFromBasket,
+  selectBasketItemsWithId,
+} from "../features/basketSlice";
 
 const DishRow = ({ id, name, description, price, image }) => {
-    // State to check if a dish has been clicked by the user
-    const [isPressed, setIsPressed] = useState(false);
+  // State to check if a dish has been clicked by the user
+  const [isPressed, setIsPressed] = useState(false);
+  const items = useSelector((state) => selectBasketItemsWithId(state, id));
+  const dispatch = useDispatch();
 
-    return (
-        <>
-        <TouchableOpacity
-            onPress={() => setIsPressed(!isPressed)}
-            className={
-                `
+  // addItemToBasket is a function that adds the dish selected by the
+  // user to the basket
+  const addItemToBasket = () => {
+    dispatch(addToBasket({ id, name, description, price, image }));
+  };
+
+    // removeItemFromBasket is a function that removes the dish selected by the
+    // user from the basket
+  const removeItemFromBasket = () => {
+    // Checking if there's no items in the basket, to prevent from
+    // going into negative numbers
+    if (!items.length > 0) return;
+    dispatch(removeFromBasket({ id }));
+  };
+
+  return (
+    <>
+      <TouchableOpacity
+        onPress={() => setIsPressed(!isPressed)}
+        className={`
                     bg-white border p-4 border-gray-200 ${
-                    isPressed && "border-b-0"
+                      isPressed && "border-b-0"
                     }
-                `
-            }
-        >
-            
-            {/* Displaying the Dish information */}
-            <View className="flex-row">
-                <View className="flex-1 pr-2">
-                    <Text className="text-lg mb-1">
-                        {name}
-                    </Text>
-                    <Text className="text-gray-400">
-                        {description}
-                    </Text>
-                    <Text className="text-gray-400 mt-2">
-                        <Currency quantity={price} currency="GBP" />
-                    </Text>
-                </View>
+                `}
+      >
+        {/* Displaying the Dish information */}
+        <View className="flex-row">
+          <View className="flex-1 pr-2">
+            <Text className="text-lg mb-1">{name}</Text>
+            <Text className="text-gray-400">{description}</Text>
+            <Text className="text-gray-400 mt-2">
+              <Currency quantity={price} currency="GBP" />
+            </Text>
+          </View>
 
-                <View>
-                    <Image
-                        style={{
-                            borderWidth: 1,
-                            borderColor: '#F3F3F4',
-                        }}
-                        source={{ uri: urlFor(image).url() }}
-                        className="h-20 w-20 bg-gray-300 p-4"
-                    />
-                </View>
-            </View>
+          <View>
+            <Image
+              style={{
+                borderWidth: 1,
+                borderColor: "#F3F3F4",
+              }}
+              source={{ uri: urlFor(image).url() }}
+              className="h-20 w-20 bg-gray-300 p-4"
+            />
+          </View>
+        </View>
+      </TouchableOpacity>
 
-        </TouchableOpacity>
-        
-        {/* If a dish is clicked by the user, show + and - icons to select dish quantity */}
-        {isPressed && (
-            <View className="bg-white px-4">
-                <View className="flex-row items-center space-x-2 pb-3">
+      {/* If a dish is clicked by the user, show + and - icons to select dish quantity */}
+      {isPressed && (
+        <View className="bg-white px-4">
+          <View className="flex-row items-center space-x-2 pb-3">
+            <TouchableOpacity
+                // Disabling the button if there's no items in the basket
+                disabled={!items.length}
+                onPress={removeItemFromBasket}
+            >
+              <MinusCircleIcon
+                // If the length is +0, minus button should be green, otherwise
+                // it should be gray
+                color={items.length > 0 ? "#00CCBB" : "gray"}
+                size={40}
+              />
+            </TouchableOpacity>
 
-                    <TouchableOpacity>
-                        <MinusCircleIcon
-                            color="#00CCBB"
-                            size={40}
-                        />
-                    </TouchableOpacity>
-                    
-                    <Text>0</Text>
+            <Text>{items.length}</Text>
 
-                    <TouchableOpacity>
-                        <PlusCircleIcon
-                            color="#00CCBB"
-                            size={40}
-                        />
-                    </TouchableOpacity>
-
-                </View>
-            </View>
-        )}
-        </>
-    );
+            <TouchableOpacity onPress={addItemToBasket}>
+              <PlusCircleIcon color="#00CCBB" size={40} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </>
+  );
 };
 
-export default DishRow
+export default DishRow;
